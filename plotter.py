@@ -20,13 +20,13 @@ xmin = 0.26
 xmax = 0.40
 
 # set y range
-auto_ylim = False # False for scaling based on full x range
+auto_ylim = True # False for scaling based on full x range
 ymargin = 0.5 # margin = standard deviation * ymargin, ignored if manual_ylim
 
 # set these for manual y range (maybe after checking with auto_ylim = True?)
-manual_ylim = True # don't forget to set auto_ylim = False
-ymin = -0.05
-ymax = 0.12
+manual_ylim = False # don't forget to set auto_ylim = False if this is true
+# ymin =
+# ymax =
 
 # set y axis precision
 ytick = "%.2f"
@@ -58,7 +58,7 @@ def plot_line(x, y, label): # make sure colors are consistent
     plt.plot(x, y, color = color, label = label, linewidth = linewidth, alpha = alpha)
 
 # read in directories
-root = input("Enter the root directory (default current): ") or P.cwd()
+root = P(input("Enter the root directory (default current): ")) or P.cwd()
 savedir = input("Enter the directory to save to (default root/" + filetype + "s):" ) or filetype + "s"
 savepath = root/savedir
 directories = [i for i in P(root).iterdir() if i.is_dir()]
