@@ -15,7 +15,7 @@ filetype = "png"
 
 # set x range
 xlim = True # False for full range
-xmin = 0.24
+xmin = 0.26
 xmax = 0.40
 
 # set y range
@@ -36,16 +36,20 @@ def process_filename(filename): # better names for legend
 
 def plot_line(x, y, label): # make sure colors are consistent
     color = ""
+    linewidth = 0.5
+    alpha = 0.5
     if label == "background":
-        color = "tab:gray"
+        color = "xkcd:greyish purple"
     elif label == "subtraction result":
-        color = "tab:red"
+        color = "xkcd:light orange"
+        linewidth = 1.0
+        alpha = 1.0
     else:
-        color = "tab:orange"
-    plt.plot(x, y, color = color, label = label, linewidth = 0.5)
+        color = "xkcd:cornflower blue"
+    plt.plot(x, y, color = color, label = label, linewidth = linewidth, alpha = alpha)
 
 # read in directories
-root = input("Enter the root directory (default current): ")
+root = input("Enter the root directory (default current): ") or ""
 savedir = input("Enter the directory to save to (default root/" + filetype + "s):" ) or filetype + "s"
 directories = [i for i in P(root).iterdir() if i.is_dir()]
 
@@ -54,9 +58,11 @@ try:
 except:
     if P(root + "/" + savedir).is_dir():
         print("save directory already exists\n")
+        print(P(root + "/" + savedir).absolute())
     else:
         print(P(root + "/" + savedir))
         print("error, exiting\n")
+        input("")
         exit()
 
 for directory in directories: # iterate through directories
@@ -98,7 +104,7 @@ for directory in directories: # iterate through directories
                         ystd = local_ystd
     if ylim & xlim: # rescale y if necessary
         ystd *= ymargin
-        plt.ylim(ymin - ystd, ymax + ystd)
+        plt.ylim(round(ymin - ystd, 2), round(ymax + ystd, 2))
 
     # export plot
     if files: # ignore directory with no csvs
@@ -109,3 +115,5 @@ for directory in directories: # iterate through directories
         #plt.tight_layout()
         plt.savefig(P(root + "/" + savedir + "/" + directory.name + "." + filetype), format = filetype, bbox_inches = "tight", dpi = 200)
         plt.clf()
+
+input("Finished, press enter to exit!")
