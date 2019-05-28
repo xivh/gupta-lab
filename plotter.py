@@ -20,12 +20,16 @@ xmin = 0.26
 xmax = 0.40
 
 # set y range
-ylim = True # False for scaling based on full x range
-ymargin = 0.5 # margin = standard deviation * ymargin
+auto_ylim = False # False for scaling based on full x range
+ymargin = 0.5 # margin = standard deviation * ymargin, ignored if manual_ylim
+
+# set these for manual y range (maybe after checking with auto_ylim = True?)
+manual_ylim = True # don't forget to set auto_ylim = False
+ymin = -0.05
+ymax = 0.12
 
 # set y axis precision
 ytick = "%.2f"
-plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter(ytick))
 
 ###
 
@@ -73,7 +77,7 @@ for directory in directories: # iterate through directories
     files = [i for i in P(directory).iterdir() if i.suffix == ".CSV"]
     if xlim: # set x range
         plt.xlim(xmin, xmax)
-    if ylim: # initialize y range
+    if auto_ylim: # initialize y range
         ymax = -sys.maxsize
         ymin = sys.maxsize
         ystd = 0
@@ -91,7 +95,7 @@ for directory in directories: # iterate through directories
         # add line
         # plt.plot(x, y, label.split(".")[0])
         plot_line(x, y, process_filename(filename.name))
-        if ylim & xlim: # only need to rescale if xlim was set
+        if auto_ylim & xlim: # only need to rescale if xlim was set
             visible_y = []
             for index, item in enumerate(y):
                 if xmin <= x[index] <= xmax:
@@ -106,12 +110,16 @@ for directory in directories: # iterate through directories
                         ymax = local_ymax
                     if local_ystd > ystd:
                         ystd = local_ystd
-    if ylim & xlim: # rescale y if necessary
+    if auto_ylim & xlim: # rescale y if necessary
         ystd *= ymargin
         plt.ylim(ymin - ystd, ymax + ystd)
 
+    if manual_ylim:
+        plt.ylim(ymin, ymax)
+
     # export plot
     if files: # ignore directory with no csvs
+        plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter(ytick))
         plt.title(directory.name)
         plt.xlabel("energy (eV)")
         plt.ylabel("intensity (au)")
