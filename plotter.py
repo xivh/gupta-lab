@@ -4,6 +4,7 @@
 # variables are defined at the top of the program
 # manual x scaling, automatic y scaling
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 from numpy import genfromtxt, amin, amax, std
 from pathlib import Path as P # wrap all paths with P for cross-compatability
 import sys
@@ -19,8 +20,12 @@ xmin = 0.26
 xmax = 0.40
 
 # set y range
-ylim = True # False for automatic range
+ylim = True # False for scaling based on full x range
 ymargin = 0.5 # margin = standard deviation * ymargin
+
+# set y axis precision
+ytick = "%.2f"
+plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter(ytick))
 
 ###
 
@@ -49,22 +54,21 @@ def plot_line(x, y, label): # make sure colors are consistent
     plt.plot(x, y, color = color, label = label, linewidth = linewidth, alpha = alpha)
 
 # read in directories
-root = input("Enter the root directory (default current): ") or ""
+root = input("Enter the root directory (default current): ") or P.cwd()
 savedir = input("Enter the directory to save to (default root/" + filetype + "s):" ) or filetype + "s"
+savepath = root/savedir
 directories = [i for i in P(root).iterdir() if i.is_dir()]
 
 try:
-    P(root + "/" + savedir).mkdir()
+    savepath.mkdir()
 except:
-    if P(root + "/" + savedir).is_dir():
-        print("save directory already exists\n")
-        print(P(root + "/" + savedir).absolute())
+    if savepath.is_dir():
+        print(str(savepath.absolute()) + " already exists\n")
     else:
-        print(P(root + "/" + savedir))
         print("error, exiting\n")
         input("")
         exit()
-
+        
 for directory in directories: # iterate through directories
     files = [i for i in P(directory).iterdir() if i.suffix == ".CSV"]
     if xlim: # set x range
@@ -104,7 +108,7 @@ for directory in directories: # iterate through directories
                         ystd = local_ystd
     if ylim & xlim: # rescale y if necessary
         ystd *= ymargin
-        plt.ylim(round(ymin - ystd, 2), round(ymax + ystd, 2))
+        plt.ylim(ymin - ystd, ymax + ystd)
 
     # export plot
     if files: # ignore directory with no csvs
@@ -113,7 +117,7 @@ for directory in directories: # iterate through directories
         plt.ylabel("intensity (au)")
         plt.legend(loc = "upper right")
         #plt.tight_layout()
-        plt.savefig(P(root + "/" + savedir + "/" + directory.name + "." + filetype), format = filetype, bbox_inches = "tight", dpi = 200)
+        plt.savefig(P(str(savepath/directory.name) + "." + filetype), format = filetype, bbox_inches = "tight", dpi = 200)
         plt.clf()
 
 input("Finished, press enter to exit!")
