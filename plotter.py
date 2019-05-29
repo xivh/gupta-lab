@@ -72,7 +72,7 @@ except:
         print("error, exiting\n")
         input("")
         exit()
-        
+
 for directory in directories: # iterate through directories
     files = [i for i in P(directory).iterdir() if i.suffix == ".CSV"]
     if xlim: # set x range
@@ -93,7 +93,7 @@ for directory in directories: # iterate through directories
             y.append(line[1])
 
         # add line
-        # plt.plot(x, y, label.split(".")[0])
+        # plt.plot(x, y, label = filename.name.split(".")[0])
         plot_line(x, y, process_filename(filename.name))
         if auto_ylim & xlim: # only need to rescale if xlim was set
             visible_y = []
