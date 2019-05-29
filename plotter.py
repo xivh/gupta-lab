@@ -126,7 +126,7 @@ for directory in directories: # iterate through directories
         plt.legend(loc = "upper right")
         #plt.tight_layout()
         #plt.savefig(P(str(savepath/directory.name) + "." + filetype), format = filetype, bbox_inches = "tight", dpi = 200)
-        plt.savefig(str(savepath/directory.name) + "." + filetype), format = filetype, bbox_inches = "tight", dpi = 200) # python 3.4 + matplotlib path fix
+        plt.savefig(str(savepath/directory.name) + "." + filetype, format = filetype, bbox_inches = "tight", dpi = 200) # python 3.4 + matplotlib path fix
         plt.clf()
 
 input("Finished, press enter to exit!")
