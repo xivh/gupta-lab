@@ -74,7 +74,7 @@ except:
         exit()
 
 for directory in directories: # iterate through directories
-    files = [i for i in P(directory).iterdir() if i.suffix == ".CSV"]
+    files = [i for i in P(directory).iterdir() if i.suffix.upper() == ".CSV"]
     if xlim: # set x range
         plt.xlim(xmin, xmax)
     if auto_ylim: # initialize y range
