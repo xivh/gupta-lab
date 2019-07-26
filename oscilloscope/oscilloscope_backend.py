@@ -38,6 +38,7 @@ def capture_waveform(tek, channel, destination=None):
     tek.write("DATA:STOP 500000") # max length, won't cut off any waveforms
     waveform = tek.query_binary_values("CURVE?", datatype="h", is_big_endian=True)
     scaled_waveform = scale_waveform(tek, channel, waveform)
+    tek.write("SELECT:" + channel + " OFF")
     with destination.open(mode="w") as output:
         for i in scaled_waveform:
             output.write(str(i[0]) + "," + str(i[1]) + "\n")
