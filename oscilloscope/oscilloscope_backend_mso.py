@@ -4,11 +4,16 @@ import pathlib
 from pathlib import Path as P
 import sys
 import visa as v
+from decimal import Decimal
 
 def automatic_setup():
     try:
         tek = v.ResourceManager().open_resource(v.ResourceManager().list_resources()[0])
         print(tek.query("*IDN?")) # should print tektronix and some other info
+        print("Is this the right instrument?")
+        correct = input("Press enter for yes or enter anything for no: ")
+        if correct != "":
+            raise ValueError("The wrong instrument connected!")
         return tek
     except:
         print("Automatic setup failed")
@@ -25,16 +30,18 @@ def manual_setup():
         tek = v.ResourceManager().open_resource(instrument)
         return tek
 
-def capture_waveform(tek, channel, destination=None):
-    if destination == None:
-        destination = P.cwd().joinpath(channel + ".csv")
+def capture_waveform(tek, channel, destination):
+    if destination == "":
+        P.mkdir(P.cwd().joinpath("captures"), parents=True, exist_ok=True)
+        destination = P.cwd().joinpath("captures", channel + ".csv")
     else:
+        P.mkdir(P.cwd().joinpath(destination), parents=True, exist_ok=True)
         destination = P.cwd().joinpath(destination + ".csv")
     tek.write("SELECT:" + channel + " ON")
     tek.write("DATA:SOURCE " + channel)
     tek.write("DATA:WIDTH 2")
     tek.write("DATA:START 1")
-    tek.write("DATA:STOP 500000") # max length, won't cut off any waveforms
+    tek.write("DATA:STOP 500000") # may need to replace mso's max length here
     waveform = tek.query_binary_values("CURVE?", datatype="h", is_big_endian=True)
     scaled_waveform = scale_waveform(tek, channel, waveform)
     tek.write("SELECT:" + channel + " OFF")
@@ -49,17 +56,17 @@ def scale_waveform(tek, channel, waveform): # returns the scaled y of the wavefo
     return points
 
 def scale_x(tek):
-    xincr = float(tek.query("WFMOUTPRE:XINCR?"))
+    xincr = Decimal(tek.query("WFMOUTPRE:XINCR?"))
     pt_off = int(tek.query("WFMOUTPRE:PT_OFF?"))
     nr_pt = int(tek.query("WFMOUTPRE:NR_PT?"))
-    scaled_x = [float(format(xincr * (i - pt_off), ".6g")) for i in range(nr_pt)] # cuts to 4 sig figs
+    scaled_x = [xincr * (i - pt_off) for i in range(nr_pt)]
     return scaled_x
 
 def scale_y(tek, waveform):
-    ymult = float(tek.query("WFMOUTPRE:YMULT?"))
-    yoff = float(tek.query("WFMOUTPRE:YOFF?"))
-    yzero = float(tek.query("WFMOUTPRE:YZERO?"))
-    scaled_y = [float(format(yzero + ymult * (i - yoff), ".6g")) for i in waveform]
+    ymult = Decimal(tek.query("WFMOUTPRE:YMULT?"))
+    yoff = Decimal(tek.query("WFMOUTPRE:YOFF?"))
+    yzero = Decimal(tek.query("WFMOUTPRE:YZERO?"))
+    scaled_y = [yzero + ymult * (i - yoff) for i in waveform]
     return scaled_y
     
     

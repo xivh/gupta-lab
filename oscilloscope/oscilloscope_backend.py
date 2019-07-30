@@ -5,11 +5,16 @@ import pathlib
 from pathlib import Path as P
 import sys
 import visa as v
+from decimal import Decimal
 
 def automatic_setup():
     try:
         tek = v.ResourceManager().open_resource(v.ResourceManager().list_resources()[0])
         print(tek.query("*IDN?")) # should print tektronix and some other info
+        print("Is this the right instrument?")
+        correct = input("Press enter for yes or enter anything for no: ")
+        if correct != "":
+            raise ValueError("The wrong instrument connected!")
         return tek
     except:
         print("Automatic setup failed")
@@ -26,10 +31,12 @@ def manual_setup():
         tek = v.ResourceManager().open_resource(instrument)
         return tek
 
-def capture_waveform(tek, channel, destination=None):
-    if destination == None:
-        destination = P.cwd().joinpath(channel + ".csv")
+def capture_waveform(tek, channel, destination):
+    if destination == "":
+        P.mkdir(P.cwd().joinpath("captures"), parents=True, exist_ok=True)
+        destination = P.cwd().joinpath("captures", channel + ".csv")
     else:
+        P.mkdir(P.cwd().joinpath(destination), parents=True, exist_ok=True)
         destination = P.cwd().joinpath(destination + ".csv")
     tek.write("SELECT:" + channel + " ON")
     tek.write("DATA:SOURCE " + channel)
@@ -50,17 +57,17 @@ def scale_waveform(tek, channel, waveform): # returns the scaled y of the wavefo
     return points
 
 def scale_x(tek, channel):
-    xincr = float(tek.query("WFMPRE:" + channel + ":XINCR?").split()[1])
+    xincr = Decimal(tek.query("WFMPRE:" + channel + ":XINCR?").split()[1])
     pt_off = int(tek.query("WFMPRE:" + channel + ":PT_OFF?").split()[1])
     nr_pt = int(tek.query("WFMPRE:" + channel + ":NR_PT?").split()[1])
-    scaled_x = [float(format(xincr * (i - pt_off), ".6g")) for i in range(nr_pt)] # cuts to 4 sig figs
+    scaled_x = [xincr * (i - pt_off) for i in range(nr_pt)]
     return scaled_x
 
 def scale_y(tek, channel, waveform):
-    ymult = float(tek.query("WFMPRE:" + channel + ":YMULT?").split()[1])
-    yoff = float(tek.query("WFMPRE:" + channel + ":YOFF?").split()[1])
-    yzero = float(tek.query("WFMPRE:" + channel + ":YZERO?").split()[1])
-    scaled_y = [float(format(yzero + ymult * (i - yoff), ".6g")) for i in waveform]
+    ymult = Decimal(tek.query("WFMPRE:" + channel + ":YMULT?").split()[1])
+    yoff = Decimal(tek.query("WFMPRE:" + channel + ":YOFF?").split()[1])
+    yzero = Decimal(tek.query("WFMPRE:" + channel + ":YZERO?").split()[1])
+    scaled_y = [yzero + ymult * (i - yoff) for i in waveform]
     return scaled_y
     
     
