@@ -15,7 +15,7 @@ while True:
     elif channel == "exit":
         break
     else:
-        destination = input("Choose a file destination or press enter for default: ")
+        destination = input("Choose a file name or press enter for default: ")
         ob.capture_waveform(tek, channel, destination)
 
 input("Press enter to close the program!")
