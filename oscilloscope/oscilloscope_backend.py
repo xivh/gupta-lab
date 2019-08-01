@@ -32,12 +32,11 @@ def manual_setup():
         return tek
 
 def capture_waveform(tek, channel, destination):
+    P.mkdir(P.cwd().joinpath("captures"), parents=True, exist_ok=True)
     if destination == "":
-        P.mkdir(P.cwd().joinpath("captures"), parents=True, exist_ok=True)
         destination = P.cwd().joinpath("captures", channel + ".csv")
     else:
-        P.mkdir(P.cwd().joinpath(destination), parents=True, exist_ok=True)
-        destination = P.cwd().joinpath(destination + ".csv")
+        destination = P.cwd().joinpath("captures", destination + ".csv")
     tek.write("SELECT:" + channel + " ON")
     tek.write("DATA:SOURCE " + channel)
     tek.write("DATA:WIDTH 2")
